@@ -29,6 +29,13 @@ const formatCurrentTime5Min = () => {
   return `${hours}:${minutes}`;
 };
 
+const formatCurrentTime = () => {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
 // Yıllık Bakım için hafta numarası hesaplama
 const getWeekNumber = (date) => {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -72,11 +79,12 @@ export default function App() {
 
   // Üretim form states
   const [tarihBaslangic, setTarihBaslangic] = useState(formatCurrentDateTr());
-  const [saatBaslangic, setSaatBaslangic] = useState(formatCurrentTime5Min());
+  const [saatBaslangic, setSaatBaslangic] = useState(formatCurrentTime());
   const [selectedMakine, setSelectedMakine] = useState('');
   const [siparisNo, setSiparisNo] = useState('');
   const [aciklama, setAciklama] = useState('');
   const [showDatePickerBas, setShowDatePickerBas] = useState(false);
+  const [showTimePickerBas, setShowTimePickerBas] = useState(false);
   const uretimScrollRef = useRef(null);
   const bakimDetailScrollRef = useRef(null);
 
@@ -88,10 +96,12 @@ export default function App() {
   const [bakimTeknisyen, setBakimTeknisyen] = useState('');
   const [bakimNeden, setBakimNeden] = useState('');
   const [bakimAciklama, setBakimAciklama] = useState('');
-  const [mudahaleBaslangic, setMudahaleBaslangic] = useState(formatCurrentTime5Min());
+  const [mudahaleBaslangic, setMudahaleBaslangic] = useState(formatCurrentTime());
   const [bakimTarihBitis, setBakimTarihBitis] = useState(formatCurrentDateTr());
-  const [bakimSaatBitis, setBakimSaatBitis] = useState(formatCurrentTime5Min());
+  const [bakimSaatBitis, setBakimSaatBitis] = useState(formatCurrentTime());
   const [showDatePickerBit, setShowDatePickerBit] = useState(false);
+  const [showTimePickerMudahale, setShowTimePickerMudahale] = useState(false);
+  const [showTimePickerBitis, setShowTimePickerBitis] = useState(false);
 
   // Haftalık Bakım states
   const [haftalikBakimListesi, setHaftalikBakimListesi] = useState([]);
@@ -235,10 +245,10 @@ export default function App() {
 
     const syncStartDateTime = () => {
       setTarihBaslangic(formatCurrentDateTr());
-      setSaatBaslangic(formatCurrentTime5Min());
-      setMudahaleBaslangic(formatCurrentTime5Min());
+      setSaatBaslangic(formatCurrentTime());
+      setMudahaleBaslangic(formatCurrentTime());
       setBakimTarihBitis(formatCurrentDateTr());
-      setBakimSaatBitis(formatCurrentTime5Min());
+      setBakimSaatBitis(formatCurrentTime());
     };
 
     syncStartDateTime();
@@ -579,7 +589,7 @@ export default function App() {
         setActiveArizaCount(nextArizalar.filter((a) => a.status === 'bildirildi').length);
         Alert.alert('Başarılı', 'Demo kayıt oluşturuldu');
         setTarihBaslangic(formatCurrentDateTr());
-        setSaatBaslangic(formatCurrentTime5Min());
+        setSaatBaslangic(formatCurrentTime());
         setSelectedMakine('');
         setSiparisNo('');
         setAciklama('');
@@ -599,7 +609,7 @@ export default function App() {
       });
       Alert.alert('Başarılı', 'Arıza bildirildi');
       setTarihBaslangic(formatCurrentDateTr());
-      setSaatBaslangic(formatCurrentTime5Min());
+      setSaatBaslangic(formatCurrentTime());
       setSelectedMakine('');
       setSiparisNo('');
       setAciklama('');
@@ -1785,7 +1795,7 @@ export default function App() {
               <DateTimePicker
                 value={new Date()}
                 mode="date"
-                display="default"
+                display="spinner"
                 onChange={(event, selectedDate) => {
                   setShowDatePickerBas(false);
                   if (selectedDate) {
@@ -1796,20 +1806,29 @@ export default function App() {
             )}
 
             <Text style={[styles.label, styles.uretimLabel]}>Başlangıç Saati</Text>
-            <View style={[styles.pickerContainer, styles.uretimPickerContainer]}>
-              <Picker
-                selectedValue={saatBaslangic}
-                onValueChange={(val) => setSaatBaslangic(val)}
-              >
-                <Picker.Item label="Seçiniz" value="" />
-                {Array.from({ length: 24 }, (_, h) => h).map(h =>
-                  Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0')).map(m => {
-                    const saat = `${h.toString().padStart(2, '0')}:${m}`;
-                    return <Picker.Item key={saat} label={saat} value={saat} />;
-                  })
-                ).flat()}
-              </Picker>
-            </View>
+            <TouchableOpacity onPress={() => setShowTimePickerBas(true)}>
+              <TextInput
+                style={[styles.input, styles.uretimInput]}
+                value={saatBaslangic}
+                editable={false}
+                pointerEvents="none"
+              />
+            </TouchableOpacity>
+            {showTimePickerBas && (
+              <DateTimePicker
+                value={new Date()}
+                mode="time"
+                display="spinner"
+                onChange={(event, selectedTime) => {
+                  setShowTimePickerBas(false);
+                  if (selectedTime) {
+                    const hours = String(selectedTime.getHours()).padStart(2, '0');
+                    const minutes = String(selectedTime.getMinutes()).padStart(2, '0');
+                    setSaatBaslangic(`${hours}:${minutes}`);
+                  }
+                }}
+              />
+            )}
 
             <Text style={[styles.label, styles.uretimLabel]}>Makine</Text>
             <View style={[styles.pickerContainer, styles.uretimPickerContainer]}>
@@ -1964,9 +1983,9 @@ export default function App() {
                   setBakimTeknisyen('');
                   setBakimNeden('');
                   setBakimAciklama('');
-                  setMudahaleBaslangic(formatCurrentTime5Min());
+                  setMudahaleBaslangic(formatCurrentTime());
                   setBakimTarihBitis(formatCurrentDateTr());
-                  setBakimSaatBitis(formatCurrentTime5Min());
+                  setBakimSaatBitis(formatCurrentTime());
                   setCurrentScreen('bakimDetail');
                 }}
               >
@@ -2253,19 +2272,29 @@ export default function App() {
             />
 
             <Text style={[styles.label, styles.kapanisLabel]}>Müdahale Saati</Text>
-            <View style={[styles.pickerContainer, styles.kapanisPicker]}>
-              <Picker
-                selectedValue={mudahaleBaslangic}
-                onValueChange={(val) => setMudahaleBaslangic(val)}
-              >
-                {Array.from({ length: 24 }, (_, h) => h).map(h =>
-                  Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0')).map(m => {
-                    const saat = `${h.toString().padStart(2, '0')}:${m}`;
-                    return <Picker.Item key={saat} label={saat} value={saat} />;
-                  })
-                ).flat()}
-              </Picker>
-            </View>
+            <TouchableOpacity onPress={() => setShowTimePickerMudahale(true)}>
+              <TextInput
+                style={[styles.input, styles.kapanisInput]}
+                value={mudahaleBaslangic}
+                editable={false}
+                pointerEvents="none"
+              />
+            </TouchableOpacity>
+            {showTimePickerMudahale && (
+              <DateTimePicker
+                value={new Date()}
+                mode="time"
+                display="spinner"
+                onChange={(event, selectedTime) => {
+                  setShowTimePickerMudahale(false);
+                  if (selectedTime) {
+                    const hours = String(selectedTime.getHours()).padStart(2, '0');
+                    const minutes = String(selectedTime.getMinutes()).padStart(2, '0');
+                    setMudahaleBaslangic(`${hours}:${minutes}`);
+                  }
+                }}
+              />
+            )}
 
             <View style={[styles.sureKutusu, styles.kapanisSureKutusu]}>
               <Text style={styles.sureText}>
@@ -2286,7 +2315,7 @@ export default function App() {
               <DateTimePicker
                 value={new Date()}
                 mode="date"
-                display="default"
+                display="spinner"
                 onChange={(event, selectedDate) => {
                   setShowDatePickerBit(false);
                   if (selectedDate) {
@@ -2297,19 +2326,29 @@ export default function App() {
             )}
 
             <Text style={[styles.label, styles.kapanisLabel]}>Arıza Bitiş Saati</Text>
-            <View style={[styles.pickerContainer, styles.kapanisPicker]}>
-              <Picker
-                selectedValue={bakimSaatBitis}
-                onValueChange={(val) => setBakimSaatBitis(val)}
-              >
-                {Array.from({ length: 24 }, (_, h) => h).map(h =>
-                  Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0')).map(m => {
-                    const saat = `${h.toString().padStart(2, '0')}:${m}`;
-                    return <Picker.Item key={saat} label={saat} value={saat} />;
-                  })
-                ).flat()}
-              </Picker>
-            </View>
+            <TouchableOpacity onPress={() => setShowTimePickerBitis(true)}>
+              <TextInput
+                style={[styles.input, styles.kapanisInput]}
+                value={bakimSaatBitis}
+                editable={false}
+                pointerEvents="none"
+              />
+            </TouchableOpacity>
+            {showTimePickerBitis && (
+              <DateTimePicker
+                value={new Date()}
+                mode="time"
+                display="spinner"
+                onChange={(event, selectedTime) => {
+                  setShowTimePickerBitis(false);
+                  if (selectedTime) {
+                    const hours = String(selectedTime.getHours()).padStart(2, '0');
+                    const minutes = String(selectedTime.getMinutes()).padStart(2, '0');
+                    setBakimSaatBitis(`${hours}:${minutes}`);
+                  }
+                }}
+              />
+            )}
 
             <View style={[styles.sureKutusu, styles.kapanisSureKutusu]}>
               <Text style={styles.sureText}>
@@ -4149,15 +4188,137 @@ export default function App() {
   }
 
   if (currentScreen === 'planlamaPareto') {
+    const gecmisArizalar = arizalar.filter(a => a.status === 'tamamlandi');
+    const toplamGecmisAriza = gecmisArizalar.length;
+
+    const mttrDakikaList = gecmisArizalar
+      .map((ariza) => dakikaFarki(
+        ariza.tarih_baslangic,
+        ariza.saat_baslangic,
+        ariza.tarih_bitis,
+        ariza.saat_bitis
+      ))
+      .filter((val) => typeof val === 'number' && val >= 0);
+
+    const mttrDakika = mttrDakikaList.length > 0
+      ? Math.round(mttrDakikaList.reduce((toplam, val) => toplam + val, 0) / mttrDakikaList.length)
+      : null;
+
+    const siraliBaslangiclar = gecmisArizalar
+      .map((ariza) => parseTrDateTime(ariza.tarih_baslangic, ariza.saat_baslangic))
+      .filter((dt) => dt)
+      .sort((a, b) => a - b);
+
+    const mtbfAraliklari = [];
+    for (let i = 1; i < siraliBaslangiclar.length; i += 1) {
+      const farkDakika = Math.round((siraliBaslangiclar[i] - siraliBaslangiclar[i - 1]) / (1000 * 60));
+      if (farkDakika >= 0) mtbfAraliklari.push(farkDakika);
+    }
+
+    const mtbfDakika = mtbfAraliklari.length > 0
+      ? Math.round(mtbfAraliklari.reduce((toplam, val) => toplam + val, 0) / mtbfAraliklari.length)
+      : null;
+
+    const nedenBazliAnaliz = Object.entries(
+      gecmisArizalar.reduce((acc, ariza) => {
+        const neden = (ariza.bakim_neden || 'Belirtilmemiş').trim();
+        acc[neden] = (acc[neden] || 0) + 1;
+        return acc;
+      }, {})
+    )
+      .map(([ad, adet]) => ({
+        ad,
+        adet,
+        yuzde: toplamGecmisAriza > 0 ? Math.round((adet / toplamGecmisAriza) * 100) : 0,
+      }))
+      .sort((a, b) => b.adet - a.adet);
+
+    const makinaBazliAnaliz = Object.entries(
+      gecmisArizalar.reduce((acc, ariza) => {
+        const makine = (ariza.makine_adi || 'Belirtilmemiş').trim();
+        acc[makine] = (acc[makine] || 0) + 1;
+        return acc;
+      }, {})
+    )
+      .map(([ad, adet]) => ({
+        ad,
+        adet,
+        yuzde: toplamGecmisAriza > 0 ? Math.round((adet / toplamGecmisAriza) * 100) : 0,
+      }))
+      .sort((a, b) => b.adet - a.adet);
+
     return (
-      <View style={styles.container}>
-        <Text style={styles.baslik}>PLANLAMA - PARETO ANALİZİ</Text>
-        <Text style={styles.emptyText}>Yapım aşamasında...</Text>
+      <View style={styles.planlamaDetailContainer}>
+        <View style={styles.planlamaBackgroundOrbTop} />
+        <View style={styles.planlamaBackgroundOrbBottom} />
+
+        <View style={styles.planlamaHeaderRow}>
+          <TouchableOpacity
+            style={styles.planlamaBackButton}
+            onPress={() => setCurrentScreen('planlama')}
+          >
+            <Text style={styles.planlamaBackButtonText}>‹</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.planlamaTitle}>PARETO ANALİZİ</Text>
+
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.planlamaDetailScrollContent}>
+          {gecmisArizalar.length === 0 ? (
+            <Text style={styles.planlamaEmptyText}>Geçmiş arıza kaydı yok</Text>
+          ) : (
+            <>
+              <View style={styles.planlamaKpiRow}>
+                <View style={styles.planlamaKpiCard}>
+                  <Text style={styles.planlamaKpiLabel}>MTTR</Text>
+                  <Text style={styles.planlamaKpiValue}>{mttrDakika !== null ? `${mttrDakika} dk` : '-'}</Text>
+                  <Text style={styles.planlamaKpiHint}>Ortalama onarım süresi</Text>
+                </View>
+                <View style={styles.planlamaKpiCard}>
+                  <Text style={styles.planlamaKpiLabel}>MTBF</Text>
+                  <Text style={styles.planlamaKpiValue}>{mtbfDakika !== null ? `${mtbfDakika} dk` : '-'}</Text>
+                  <Text style={styles.planlamaKpiHint}>Arızalar arası ortalama süre</Text>
+                </View>
+              </View>
+
+              <View style={styles.planlamaListCard}>
+                <Text style={styles.planlamaListTitle}>DURUŞ NEDENİ BAZLI ({toplamGecmisAriza} kayıt)</Text>
+                {nedenBazliAnaliz.map((satir) => (
+                  <View key={satir.ad} style={styles.bakimAnalizRow}>
+                    <View style={styles.bakimAnalizRowTop}>
+                      <Text style={styles.bakimAnalizName}>{satir.ad}</Text>
+                      <Text style={styles.bakimAnalizValue}>{satir.adet} adet ({satir.yuzde}%)</Text>
+                    </View>
+                    <View style={styles.bakimAnalizBarTrack}>
+                      <View style={[styles.bakimAnalizBarFill, { width: `${Math.min(100, satir.yuzde)}%` }]} />
+                    </View>
+                  </View>
+                ))}
+              </View>
+
+              <View style={styles.planlamaListCard}>
+                <Text style={styles.planlamaListTitle}>MAKİNE BAZLI ({toplamGecmisAriza} kayıt)</Text>
+                {makinaBazliAnaliz.map((satir) => (
+                  <View key={satir.ad} style={styles.bakimAnalizRow}>
+                    <View style={styles.bakimAnalizRowTop}>
+                      <Text style={styles.bakimAnalizName}>{satir.ad}</Text>
+                      <Text style={styles.bakimAnalizValue}>{satir.adet} adet ({satir.yuzde}%)</Text>
+                    </View>
+                    <View style={styles.bakimAnalizBarTrack}>
+                      <View style={[styles.bakimAnalizBarFill, { width: `${Math.min(100, satir.yuzde)}%` }]} />
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
+        </ScrollView>
+
         <TouchableOpacity
-          style={[styles.buton, { backgroundColor: '#95a5a6' }]}
+          style={styles.planlamaBackInlineButton}
           onPress={() => setCurrentScreen('planlama')}
         >
-          <Text style={styles.butonMetin}>GERİ</Text>
+          <Text style={styles.planlamaBackInlineText}>‹ GERİ</Text>
         </TouchableOpacity>
       </View>
     );
@@ -5113,6 +5274,88 @@ const styles = StyleSheet.create({
   },
   bakimGecmisScrollContent: {
     paddingBottom: 8,
+  },
+  bakimAnalizCard: {
+    backgroundColor: '#edf4ff',
+    borderColor: '#cdddf7',
+    borderWidth: 1,
+    borderLeftWidth: 4,
+    borderLeftColor: '#2b6cb0',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  bakimAnalizTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#1f2a44',
+    marginBottom: 8,
+  },
+  planlamaKpiRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 10,
+  },
+  planlamaKpiCard: {
+    flex: 1,
+    backgroundColor: '#f7fbff',
+    borderWidth: 1,
+    borderColor: '#d5e7fb',
+    borderRadius: 12,
+    padding: 12,
+  },
+  planlamaKpiLabel: {
+    fontSize: 12,
+    color: '#355070',
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  planlamaKpiValue: {
+    fontSize: 22,
+    color: '#1f2a44',
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  planlamaKpiHint: {
+    fontSize: 11,
+    color: '#56738f',
+    fontWeight: '600',
+  },
+  bakimAnalizRow: {
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#dbe8fb',
+  },
+  bakimAnalizRowTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  bakimAnalizName: {
+    flex: 1,
+    fontSize: 13,
+    color: '#2b3b57',
+    fontWeight: '600',
+    paddingRight: 8,
+  },
+  bakimAnalizValue: {
+    fontSize: 13,
+    color: '#1f2a44',
+    fontWeight: '700',
+  },
+  bakimAnalizBarTrack: {
+    width: '100%',
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: '#d9e5f7',
+    overflow: 'hidden',
+  },
+  bakimAnalizBarFill: {
+    height: '100%',
+    borderRadius: 999,
+    backgroundColor: '#2f80ed',
   },
   bakimGecmisCard: {
     backgroundColor: '#e8f7ee',
