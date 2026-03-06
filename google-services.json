@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "71758897017",
+    "project_id": "kasif-cmms",
+    "storage_bucket": "kasif-cmms.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:71758897017:android:16ecffd4e5f0ec1f51d9a8",
+        "android_client_info": {
+          "package_name": "com.kasifoz.YCMMS"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8qksQGmwgP2BdmGuW6t_Ccb9sY0Ja4IU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
